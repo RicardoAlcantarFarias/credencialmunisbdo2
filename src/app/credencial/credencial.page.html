@@ -1,0 +1,65 @@
+<ion-content style="display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 10px;">
+  <!-- Mensaje de error si no se cargan los datos -->
+  <div *ngIf="loadError" style="color: red; text-align: center; margin-bottom: 20px;">
+    {{ loadError }}
+  </div>
+
+  <!-- Tarjeta de credencial -->
+  <ion-card *ngIf="user && !loadError" 
+            style="width: 100%; max-width: 400px; background-image: url('../../../assets/Fondo.jpg'); background-size: cover; background-position: center;">
+    
+    <!-- Logo -->
+    <img src="../../../assets/LOGO NUEVO 2024 blancoa.png" 
+         alt="Logo" 
+         style="width: 100%; height: auto; margin-top: 10px;">
+
+    <ion-card-header>
+      <!-- Nombre del usuario -->
+      <ion-card-title style="color: aliceblue; text-align: center; margin-top: 10px;">
+        {{ user.nombre_completo || 'Sin Nombre' }}
+      </ion-card-title>
+
+      <!-- Foto de perfil del usuario -->
+      <div style="display: flex; justify-content: center; margin-top: 10px;">
+        <img 
+          [src]="user.imagen_perfil ? 'http://190.215.38.222:9595' + user.imagen_perfil : 'https://cdn-icons-png.flaticon.com/512/3135/3135768.png'" 
+          alt="Foto de perfil" 
+          style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid aliceblue;">
+      </div>
+    </ion-card-header>
+    
+    <ion-card-content>
+      <!-- Información del usuario -->
+      <p style="color: aliceblue; text-align: center;">RUT: {{ user.rut }}</p>
+      <p style="color: aliceblue; text-align: center;">Departamento: {{ user.departamento }}</p>
+      <p style="color: aliceblue; text-align: center;">Dirección: {{ user.direccion }}</p>
+      <p style="color: aliceblue; text-align: center;">Correo Electrónico: {{ user.correo }}</p>
+      <p style="color: aliceblue; text-align: center;">Móvil: {{ user.telefono }}</p>
+
+      <!-- QR Code -->
+      <div style="display: flex; justify-content: center; margin-top: 10px;">
+        <qrcode [qrdata]="qrData" 
+                [width]="150" 
+                [errorCorrectionLevel]="'M'">
+        </qrcode>
+      </div>
+
+      <!-- Firma -->
+      <div style="display: flex; justify-content: center; margin-top: 10px;">
+        <img src="../../assets/Firma.jpeg" 
+             alt="Firma" 
+             style="width: 40%; height: auto;">
+      </div>
+
+      <!-- Botón para cerrar sesión -->
+      <ion-button expand="block" color="danger" (click)="logout()" style="margin-top: 20px;">
+        Cerrar Sesión
+      </ion-button>
+
+      <!-- Botón para subir/actualizar foto -->
+      <ion-button expand="block" color="primary" (click)="navigateToUpdatePhoto()" style="margin-top: 10px;">
+        Subir Foto
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

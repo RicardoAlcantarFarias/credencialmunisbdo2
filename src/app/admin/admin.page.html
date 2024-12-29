@@ -1,0 +1,42 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Admin</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content padding>
+  <ion-searchbar [(ngModel)]="search" (ionInput)="searchUsers()" placeholder="Buscar por correo o RUT"></ion-searchbar>
+
+  <ion-list *ngIf="users.length > 0">
+    <ion-item *ngFor="let user of users">
+      <ion-label>
+        <h2>{{ user.nombre_completo || 'Sin Nombre' }}</h2>
+        <p>RUT: {{ user.rut || 'N/A' }}</p>
+        <p>Email: {{ user.correo || 'N/A' }}</p>
+        <p>Estado: {{ user.estado || 'Desconocido' }}</p>
+      </ion-label>
+
+      <!-- Botón para cambiar el estado del usuario -->
+      <ion-button 
+        expand="full" 
+        color="primary" 
+        (click)="updateUserStatus(user.id, user.estado === 'Activo' ? 'Inactivo' : 'Activo')">
+        {{ user.estado === 'Activo' ? 'Desactivar' : 'Activar' }}
+      </ion-button>
+
+      <!-- Botón para eliminar el usuario -->
+      <ion-button 
+        expand="full" 
+        color="danger" 
+        (click)="deleteUser(user.id)">
+        Eliminar
+      </ion-button>
+    </ion-item>
+  </ion-list>
+
+  <ion-card *ngIf="users.length === 0">
+    <ion-card-header>
+      <ion-card-title>No se encontraron usuarios</ion-card-title>
+    </ion-card-header>
+  </ion-card>
+</ion-content>

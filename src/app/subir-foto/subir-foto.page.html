@@ -1,0 +1,28 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Subir Foto de Perfil</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div *ngIf="errorMessage" class="error-message">
+    <p>{{ errorMessage }}</p>
+  </div>
+
+  <form (ngSubmit)="uploadPhoto()">
+    <div class="upload-container">
+      <ion-item>
+        <ion-label position="stacked">Selecciona tu foto</ion-label>
+        <input type="file" accept="image/*" (change)="onFileSelected($event)" />
+      </ion-item>
+      <div *ngIf="previewImage" class="preview-container">
+        <img [src]="previewImage" alt="Vista previa" />
+      </div>
+    </div>
+
+    <ion-button expand="block" type="submit" [disabled]="!selectedFile">
+      Subir Foto
+    </ion-button>
+  </form>
+</ion-content>
+

@@ -1,0 +1,7 @@
+{
+  "name": "credencialDigital",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

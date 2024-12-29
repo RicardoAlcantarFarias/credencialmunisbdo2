@@ -1,0 +1,71 @@
+<ion-content padding>
+  <div style="background-image: url('../../../assets/Fondo.jpg'); background-size: cover; background-position: center; padding: 40px; border-radius: 10px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); max-width: 500px; margin: 0 auto;">
+    <img src="../../../assets/LOGO NUEVO 2024 blancoa.png" alt="" style="width: 100%; height: auto; margin-top: 10px;">
+
+    <!-- Formulario de registro -->
+    <form [formGroup]="registerForm" (ngSubmit)="register()" style="margin-top: 20px;">
+      <ion-item lines="none" style="margin-bottom: 15px;">
+        <ion-label position="floating">Nombre Completo</ion-label>
+        <br>
+        <!-- Ejemplo para el nombre completo -->
+        <ion-input formControlName="nombre_completo" placeholder="Juan Pérez" style="width: 100%;"></ion-input>
+      </ion-item>
+
+      <ion-item lines="none" style="margin-bottom: 15px;">
+        <ion-label position="floating">RUT</ion-label>
+        <br>
+        <!-- Ejemplo para el RUT -->
+        <ion-input formControlName="rut" placeholder="12.345.678-9" style="width: 100%;"></ion-input>
+      </ion-item>
+
+      <ion-item lines="none" style="margin-bottom: 15px;">
+        <ion-label position="floating">Departamento</ion-label>
+        <br>
+        <!-- Ejemplo para el departamento -->
+        <ion-input formControlName="departamento" placeholder="Departamento de TI" style="width: 100%;"></ion-input>
+      </ion-item>
+
+      <ion-item lines="none" style="margin-bottom: 15px;">
+        <ion-label position="floating">Informatica</ion-label>
+        <br>
+        <!-- Ejemplo para la dirección -->
+        <ion-input formControlName="direccion" placeholder="Av. Siempre Viva 123" style="width: 100%;"></ion-input>
+      </ion-item>
+
+      <ion-item lines="none" style="margin-bottom: 15px;">
+        <ion-label position="floating">Correo Electrónico</ion-label>
+        <br>
+        <!-- Ejemplo para el correo electrónico -->
+        <ion-input formControlName="correo" type="email" placeholder="ejemplo@sanbernardo.cl" style="width: 100%;"></ion-input>
+      </ion-item>
+
+      <ion-item lines="none" style="margin-bottom: 15px;">
+        <ion-label position="floating">Móvil</ion-label>
+        <br>
+        <!-- Ejemplo para el móvil -->
+        <ion-input formControlName="telefono" placeholder="+56 9 1234 5678" style="width: 100%;"></ion-input>
+      </ion-item>
+
+      <ion-item lines="none" style="margin-bottom: 20px;">
+        <ion-label position="floating">Contraseña</ion-label>
+        <br>
+        <!-- Ejemplo para la contraseña -->
+        <ion-input formControlName="contrasena" type="password" placeholder="******" style="width: 100%;"></ion-input>
+      </ion-item>
+
+      <br>
+
+      <ion-button expand="full" type="submit" style="margin-top: 10px;">Registrar</ion-button>
+    </form>
+
+    <!-- Mensaje de error de registro -->
+    <div *ngIf="registrationError" style="color: whitesmoke; margin-top: 10px;">
+      {{ registrationError }}
+    </div>
+
+    <!-- Enlace a inicio de sesión -->
+    <div class="login-link" style="color: white; margin-top: 20px;">
+      <p>¿Ya tienes cuenta? <a [routerLink]="['/login']" style="color: white;">Inicia sesión aquí</a></p>
+    </div>
+  </div>
+</ion-content>

@@ -1,0 +1,193 @@
+const express = require('express');
+const mysql = require('mysql2');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
+
+// Configuración de la base de datos
+const db = mysql.createConnection({
+    host: 'localhost',  // Cambia esto a la IP de tu servidor si es necesario
+    user: 'root',
+    password: 'Lala1234',  // Cambia esta contraseña en producción y utiliza un archivo .env
+    database: 'bd2',
+    port: 3306,  // Asegúrate de que tu base de datos MySQL esté accesible en este puerto
+});
+
+// Conectar a la base de datos
+db.connect(err => {
+    if (err) {
+        console.error('Error al conectar a la base de datos:', err);
+        return;
+    }
+    console.log('Conectado a la base de datos.');
+});
+
+// Registro de usuario
+app.post('/register', (req, res) => {
+    const { nombre_completo, rut, direccion, departamento, telefono, correo, contrasena } = req.body;
+
+    // Verificación de duplicados por correo
+    db.query('SELECT * FROM credencial_user WHERE correo = ?', [correo], (err, results) => {
+        if (err) {
+            console.error('Error en la verificación de correo:', err);
+            return res.status(500).json({ error: 'Error en el servidor' });
+        }
+        if (results.length > 0) {
+            return res.status(400).json({ status: 'El correo ya está registrado' });
+        }
+
+        // Si el correo no está duplicado, continuar con el registro
+        const hash = bcrypt.hashSync(contrasena, 10);
+        db.query('INSERT INTO credencial_user SET ?', { nombre_completo, rut, direccion, departamento, telefono, correo, contrasena: hash, debe_cambiar_contrasena: true }, (err, result) => {
+            if (err) {
+                console.error('Error al registrar usuario:', err);
+                return res.status(500).json({ error: 'Error en el servidor' });
+            }
+            res.json({ status: 'Usuario registrado' });
+        });
+    });
+});
+
+// Inicio de sesión
+app.post('/login', (req, res) => {
+    const { correo, contrasena } = req.body;
+
+    // Verificar si el correo existe
+    db.query('SELECT * FROM credencial_user WHERE correo = ?', [correo], (err, results) => {
+        if (err) {
+            console.error('Error en la consulta de login:', err);
+            return res.status(500).json({ error: 'Error en el servidor' });
+        }
+        if (results.length > 0) {
+            // Comparar la contraseña
+            const validPassword = bcrypt.compareSync(contrasena, results[0].contrasena);
+            if (validPassword) {
+                const token = jwt.sign({ id: results[0].id, correo: results[0].correo }, 'secretkey', { expiresIn: '1h' });
+                const debeCambiarContrasena = results[0].debe_cambiar_contrasena; // Añadimos esta variable
+                res.json({ token, debeCambiarContrasena, status: 'Login exitoso' });
+            } else {
+                res.status(400).json({ status: 'Contraseña incorrecta' });
+            }
+        } else {
+            res.status(404).json({ status: 'Usuario no encontrado' });
+        }
+    });
+});
+
+// Verificar si el correo existe para actualizar contraseña
+app.post('/verify-email', (req, res) => {
+    const { correo } = req.body;
+
+    db.query('SELECT * FROM credencial_user WHERE correo = ?', [correo], (err, results) => {
+        if (err) {
+            console.error('Error en la verificación de correo:', err);
+            return res.status(500).json({ error: 'Error en el servidor' });
+        }
+        if (results.length > 0) {
+            res.json({ status: 'Correo encontrado' });
+        } else {
+            res.status(404).json({ status: 'Correo no encontrado' });
+        }
+    });
+});
+
+// Actualizar contraseña
+app.post('/update-password', (req, res) => {
+    const { correo, nuevaContrasena } = req.body;
+
+    // Hash de la nueva contraseña
+    const hash = bcrypt.hashSync(nuevaContrasena, 10);
+
+    // Al actualizar la contraseña, también cambiamos `debe_cambiar_contrasena` a `FALSE`
+    db.query('UPDATE credencial_user SET contrasena = ?, debe_cambiar_contrasena = ? WHERE correo = ?', [hash, false, correo], (err, result) => {
+        if (err) {
+            console.error('Error al actualizar la contraseña:', err);
+            return res.status(500).json({ error: 'Error en el servidor' });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ status: 'Correo no encontrado' });
+        }
+
+        res.json({ status: 'Contraseña actualizada' });
+    });
+});
+
+// Panel de administrador: Activar/Desactivar usuario
+app.put('/update-status/:id', (req, res) => {
+    const { estado } = req.body;
+
+    // Actualizar el estado del usuario
+    db.query('UPDATE credencial_user SET estado = ? WHERE id = ?', [estado, req.params.id], (err, result) => {
+        if (err) {
+            console.error('Error al actualizar el estado del usuario:', err);
+            return res.status(500).json({ error: 'Error en el servidor' });
+        }
+        res.json({ status: `Usuario ${estado}` });
+    });
+});
+
+// Eliminar usuario por ID
+app.delete('/users/:id', (req, res) => {
+    const { id } = req.params;
+
+    // Eliminar el usuario de la base de datos
+    db.query('DELETE FROM credencial_user WHERE id = ?', [id], (err, result) => {
+        if (err) {
+            console.error('Error al eliminar el usuario:', err);
+            return res.status(500).json({ error: 'Error en el servidor' });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ status: 'Usuario no encontrado' });
+        }
+
+        res.json({ status: 'Usuario eliminado correctamente' });
+    });
+});
+
+// Obtener usuarios por correo o RUT (búsqueda parcial o todos los usuarios si no se envía búsqueda)
+app.get('/users', (req, res) => {
+    const { search } = req.query;
+
+    let query;
+    let queryParams = [];
+
+    if (search) {
+        // Si hay un término de búsqueda, buscar por correo o RUT
+        query = 'SELECT * FROM credencial_user WHERE correo LIKE ? OR rut LIKE ?';
+        const searchParam = `%${search}%`;
+        queryParams = [searchParam, searchParam];
+    } else {
+        // Si no hay término de búsqueda, devolver todos los usuarios
+        query = 'SELECT * FROM credencial_user';
+    }
+
+    db.query(query, queryParams, (err, results) => {
+        if (err) {
+            console.error('Error en la consulta de búsqueda:', err);
+            return res.status(500).json({ error: 'Error en el servidor' });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({ status: 'No se encontraron usuarios' });
+        }
+
+        res.json(results);
+    });
+});
+
+const sslOptions = {
+    key: fs.readFileSync('/muni/credencialDigital/ssl/bk.key'), // Ruta a tu archivo .key
+    cert: fs.readFileSync('/muni/credencialDigital/ssl/bk.crt') // Ruta a tu archivo .cert
+};
+
+// Escuchar en el puerto 3000 y en todas las interfaces de red
+https.createServer(sslOptions, app).listen(9595, '0.0.0.0', () => {
+    console.log('Server running on http://0.0.0.0:9595');
+});

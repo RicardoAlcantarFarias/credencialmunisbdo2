@@ -1,0 +1,92 @@
+<ion-content fullscreen>
+  <div
+    style="
+      background-image: url('../../../assets/Fondo.jpg'); 
+      background-size: cover; 
+      background-position: center; 
+      padding: 20px; 
+      border-radius: 20px; 
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: center; 
+      height: 100vh; 
+      width: 100%; 
+      box-sizing: border-box;
+    "
+  >
+    <!-- Logo ajustado -->
+    <img 
+      src="../../../assets/LOGO NUEVO 2024 blancoa.png" 
+      alt="Logo" 
+      style="
+        max-width: 80%; 
+        height: auto; 
+        margin-top: -5%;
+        margin-bottom: 20px;
+      "
+    />
+
+    <!-- Formulario de inicio de sesión -->
+    <form 
+      [formGroup]="loginForm" 
+      (ngSubmit)="login()" 
+      style="
+        width: 100%; 
+        max-width: 400px; 
+        margin-top: 10px; 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center;
+      "
+    >
+      <ion-item lines="none" style="margin-bottom: 20px; width: 100%;">
+        <ion-label position="floating">Correo Electrónico</ion-label>
+        <ion-input 
+          formControlName="correo" 
+          type="email" 
+          placeholder="ejemplo@sanbernardo.cl"
+        ></ion-input>
+      </ion-item>
+      
+      <!-- Mensaje de error para el campo de correo -->
+      <div *ngIf="loginForm.get('correo')?.touched && correoErrors" style="width: 100%; color: white; font-size: 14px; text-align: left;">
+        <p *ngIf="correoErrors['required']">El campo de correo es obligatorio.</p>
+        <p *ngIf="correoErrors['email']">Por favor, ingresa un correo válido.</p>
+        <p *ngIf="correoErrors['pattern']">Por favor, ingresa un correo con el dominio &#64;sanbernardo.cl.</p>
+      </div>
+
+      <ion-item lines="none" style="margin-bottom: 20px; width: 100%;">
+        <ion-label position="floating">Contraseña</ion-label>
+        <ion-input 
+          formControlName="contrasena" 
+          type="password" 
+          placeholder="******"
+        ></ion-input>
+      </ion-item>
+      
+      <!-- Mensaje de error para el campo de contraseña -->
+      <div *ngIf="loginForm.get('contrasena')?.touched && contrasenaErrors" style="width: 100%; color: white; font-size: 14px; text-align: left;">
+        <p *ngIf="contrasenaErrors['required']">El campo de contraseña es obligatorio.</p>
+        <p *ngIf="contrasenaErrors['minlength']">La contraseña debe tener al menos 6 caracteres.</p>
+      </div>
+
+      <ion-button expand="block" type="submit" style="margin-top: 20px; width: 100%;">Iniciar Sesión</ion-button>
+    </form>
+
+    <!-- Enlace para recuperar la contraseña -->
+    <div class="forgot-password-link" style="color: white; margin-top: 20px; text-align: center;">
+      <p>¿Olvidaste tu contraseña? <a style="color: #ffffff;" [routerLink]="['/forgot-password']">Recupérala aquí</a></p>
+    </div>
+  </div>
+
+  <!-- Mensajes dinámicos con ion-alert -->
+  <ion-alert 
+    *ngIf="loginError"
+    [header]="alertHeader" 
+    [message]="loginError" 
+    buttons="OK"
+    (ionAlertDidDismiss)="clearLoginError()">
+  </ion-alert>
+</ion-content>
